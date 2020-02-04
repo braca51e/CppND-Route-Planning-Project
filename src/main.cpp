@@ -1,5 +1,6 @@
 #include <optional>
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -25,6 +26,23 @@ static std::optional<std::vector<std::byte>> ReadFile(const std::string &path)
     if( contents.empty() )
         return std::nullopt;
     return std::move(contents);
+}
+
+//Read until a float is typed
+float getFloat(const std::string& prompt = "Enter a float: ",
+               const std::string& reprompt = "Illegal numeric format. Try again."){
+   while(true){
+       std::cout << prompt;
+       std::string line;
+       if(!getline(std::cin, line)){
+           throw std::domain_error("getFloat: Still waiting for float.");
+       }
+       std::istringstream iss(line);
+       float float_ret; 
+       char c;
+       if(iss >> float_ret && !(iss >> c)) return float_ret;
+       std::cerr << reprompt << std::endl;
+   }
 }
 
 int main(int argc, const char **argv)
@@ -55,12 +73,20 @@ int main(int argc, const char **argv)
     // TODO 1: Declare floats `start_x`, `start_y`, `end_x`, and `end_y` and get
     // user input for these values using std::cin. Pass the user input to the
     // RoutePlanner object below in place of 10, 10, 90, 90.
+    float start_x, start_y, end_x, end_y;
 
+    start_x = getFloat("Enter a start_x: ", "Illegal numeric format. Try again.");
+    start_y = getFloat("Enter a start_y: ", "Illegal numeric format. Try again.");
+    end_x = getFloat("Enter a end_x: ", "Illegal numeric format. Try again.");
+    end_y = getFloat("Enter a end_y: ", "Illegal numeric format. Try again.");
+    
     // Build Model.
     RouteModel model{osm_data};
 
     // Create RoutePlanner object and perform A* search.
-    RoutePlanner route_planner{model, 10, 10, 90, 90};
+    //RoutePlanner route_planner{model, 10.0, 10.0, 90.0, 90.0};
+    RoutePlanner route_planner{model, start_x, start_y, end_x, end_y};
+
     route_planner.AStarSearch();
 
     std::cout << "Distance: " << route_planner.GetDistance() << " meters. \n";
